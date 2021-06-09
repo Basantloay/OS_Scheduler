@@ -63,17 +63,17 @@ void destroyClk(bool terminateAll)
 
 ////////////////////// Process \\\\\\\\\\\\\\\\\\\\\\\\
 
-struct processData
+typedef struct processData
 {
     int arrivaltime;
     int priority;
     int runningtime;
     int id;
-};
+}data;
 
-struct processControl
+typedef struct processControlBlock
 {
-	struct processData process;
+	data process;
 	int wait;
 	int remain;
 	int firstStart;
@@ -82,9 +82,95 @@ struct processControl
 	int totalTime;
 	int TA;
 	float WTA;
+	int flag;//if -1 infer data is empty or contain garbage
+			 // 1 otherwise
 	
-};
+}PCB;
 
 ////////////////// Data structures \\\\\\\\\\\\\\\\\\\\
+
+////////////////// Node \\\\\\\\\\\\\\\\
+
+typedef struct Node
+{
+    PCB pcb ;
+    struct Node *next;
+}node;
+
+node* createNode( PCB pcb1) 
+{
+	node* n = malloc(sizeof(node));
+	n->pcb=pcb1;
+	n->next=NULL;
+	return n;
+}
+	
+	  
+////////////////// Queue \\\\\\\\\\\\\\\\
+
+typedef struct Queue
+{
+    node *front;
+    node *rear;
+    long count;
+} queue;
+/*
+queue* createQueue() 
+{
+	queue* q = malloc(sizeof(queue));
+	q->front=NULL;
+	q->rear=NULL;
+	q->count=0;
+	return q;
+}
+*/
+void init(queue *q)
+{
+    q->front = NULL;
+    q->rear = NULL;
+    q->count = 0;
+}
+
+void enqueue(queue *q, PCB p)
+{
+	node* n=createNode(p);
+	//Empty queue
+	if (q->front==NULL && q->rear==NULL)
+	{
+		q->front = n;
+    	q->rear = n;
+    	q->count+=1;
+	}
+	else
+	{
+		q->rear->next = n;
+        q->rear = n;
+        q->count+=1;
+		
+	}
+	
+}
+
+
+PCB dequeue(queue *q)
+{
+	PCB p;
+	p.flag=-1;
+	if (q->front==NULL && q->rear==NULL)
+	{
+		return p;
+	}
+	else
+	{
+		node *n=q->front;
+		p=n->pcb;
+		q->front = q->front->next; 
+		if (q->front == NULL) 
+		    q->rear = NULL; 
+		free(n);
+	  	return p;
+	
+	}
+}
 
 
