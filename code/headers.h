@@ -60,3 +60,31 @@ void destroyClk(bool terminateAll)
         killpg(getpgrp(), SIGINT);
     }
 }
+
+////////////////////// Process \\\\\\\\\\\\\\\\\\\\\\\\
+
+struct processData
+{
+    int arrivaltime;
+    int priority;
+    int runningtime;
+    int id;
+};
+
+struct processControl
+{
+	struct processData process;
+	int wait;
+	int remain;
+	int firstStart;
+	int lastStart;
+	int finish;
+	int totalTime;
+	int TA;
+	float WTA;
+	
+};
+
+////////////////// Data structures \\\\\\\\\\\\\\\\\\\\
+
+
