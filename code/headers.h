@@ -105,7 +105,21 @@ node* createNode( PCB pcb1)
 	return n;
 }
 	
-	  
+typedef struct PriorityNode
+{
+    PCB pcb ;
+    struct PriorityNode *next;
+    int priorityofqueue;
+}prioritynode;
+
+prioritynode* createPriorityNode( PCB pcb1,int priorityofqueue1) 
+{
+	prioritynode* n = malloc(sizeof(prioritynode));
+	n->pcb=pcb1;
+	n->next=NULL;
+	n->priorityofqueue=priorityofqueue1;
+	return n;
+}	  
 ////////////////// Queue \\\\\\\\\\\\\\\\
 
 typedef struct Queue
@@ -114,16 +128,7 @@ typedef struct Queue
     node *rear;
     long count;
 } queue;
-/*
-queue* createQueue() 
-{
-	queue* q = malloc(sizeof(queue));
-	q->front=NULL;
-	q->rear=NULL;
-	q->count=0;
-	return q;
-}
-*/
+
 void init(queue *q)
 {
     q->front = NULL;
@@ -131,9 +136,9 @@ void init(queue *q)
     q->count = 0;
 }
 
-void enqueue(queue *q, PCB p)
+void enqueue(queue *q, PCB p1)
 {
-	node* n=createNode(p);
+	node* n=createNode(p1);
 	//Empty queue
 	if (q->front==NULL && q->rear==NULL)
 	{
@@ -172,5 +177,69 @@ PCB dequeue(queue *q)
 	
 	}
 }
+
+////////////////// Priority Queue \\\\\\\\\\\\\\\\
+
+typedef struct PriorityQueue
+{
+    prioritynode *front;
+    prioritynode *rear;
+    long count;
+} priorityqueue;
+
+void initPriority(priorityqueue *q)
+{
+    q->front = NULL;
+    q->rear = NULL;
+    q->count = 0;
+}
+
+void enqueuePriority(priorityqueue *q, PCB p,int priorityofqueue)
+{
+	prioritynode* pn=createPriorityNode(p,priorityofqueue);
+	//Empty Priority queue
+	if (q->front==NULL && q->rear==NULL)
+	{
+		q->front = pn;
+    	q->rear = pn;
+    	q->count+=1;
+	}
+	else
+	{
+		prioritynode* temp=q->front;
+		prioritynode* tempnext=q->front->next;
+		while(temp!=NULL &&tempnext!=NULL&&temp->priorityofqueue>=tempnext->priorityofqueue)
+		{
+			temp=temp->next;
+			tempnext=tempnext->next;
+		}
+		pn->next=temp->next;
+	 	temp->next=pn;
+	}
+	
+}
+
+
+PCB dequeuePriority(priorityqueue *q)
+{
+	PCB p;
+	p.flag=-1;
+	if (q->front==NULL && q->rear==NULL)
+	{
+		return p;
+	}
+	else
+	{
+		prioritynode *n=q->front;
+		p=n->pcb;
+		q->front = q->front->next; 
+		if (q->front == NULL) 
+		    q->rear = NULL; 
+		free(n);
+	  	return p;
+	
+	}
+}
+
 
 
