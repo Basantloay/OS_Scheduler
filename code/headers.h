@@ -90,6 +90,16 @@ typedef struct processControlBlock
 
 ////////////////// Data structures \\\\\\\\\\\\\\\\\\\\
 
+
+/////////////////Message Buffer \\\\\\\\\\\\\\\\\\\\\\\
+
+struct msgbuff
+{
+    long mtype;
+    data d;
+    int count;
+};
+
 ////////////////// Node \\\\\\\\\\\\\\\\
 
 typedef struct Node
