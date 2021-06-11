@@ -74,12 +74,13 @@ typedef struct processData
 typedef struct processControlBlock
 {
 	data process;
+	int pid;
 	int wait;
 	int remain;
 	int firstStart;
 	int lastStart;
 	int finish;
-	int totalTime;
+	//int totalTime;
 	int TA;
 	float WTA;
 	int flag;//if -1 infer data is empty or contain garbage
@@ -134,6 +135,15 @@ void init(queue *q)
     q->front = NULL;
     q->rear = NULL;
     q->count = 0;
+}
+
+bool isEmpty(queue *q)
+{
+	if(q->front==NULL && q->rear==NULL)
+		return true;
+	else
+		return false;
+
 }
 
 void enqueue(queue *q, PCB p1)
@@ -193,6 +203,15 @@ void initPriority(priorityqueue *q)
     q->front = NULL;
     q->rear = NULL;
     q->count = 0;
+}
+
+bool isEmptyPriority(priorityqueue *q)
+{
+	if(q->front==NULL && q->rear==NULL)
+		return true;
+	else
+		return false;
+
 }
 
 void enqueuePriority(priorityqueue *q, PCB p,int priorityofqueue)
