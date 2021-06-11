@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <string.h>
 
 typedef short bool;
 #define true 1
@@ -80,7 +81,7 @@ typedef struct processControlBlock
 	int firstStart;
 	int lastStart;
 	int finish;
-	//int totalTime;
+	int totalTime;
 	int TA;
 	float WTA;
 	int flag;//if -1 infer data is empty or contain garbage

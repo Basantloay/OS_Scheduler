@@ -1,11 +1,10 @@
 #include "headers.h"
 ///////////////// Global data members \\\\\\\\\\\\\\
 
-queue *readyQueue = malloc(sizeof(queue));//for RR,FCFS
-init(readyQueue);
-queue *readyPriorityQueue = malloc(sizeof(priorityqueue));//for SJF,HPF,SRTN
-initPeiority(readyPriorityQueue);
-PCB runningProcess=NULL;
+queue *readyQueue;
+priorityqueue *readyPriorityQueue;
+
+PCB runningProcess;
 int runningFlag=0;//0 not running process, 1 otherwise
 FILE *f;
 int count;
@@ -50,8 +49,8 @@ void RR()
 					char now[20];
 					char remaining[20];
 				// convert 123 to string [buf]
-					itoa(x, now, 20);
-					itoa(runningProcess.remain,remaining,20);
+					sprintf(now,"%d", x);
+					sprintf(remaining,"%d",runningProcess.remain);
 					execl("./process.out", "process.out ",now,remaining,NULL);
 					exit(0);
 				
@@ -122,8 +121,6 @@ void RR()
 
 
 
-}
-
 ///////////////// Shortest Remaining Time Next SRTN Algorithm \\\\\\\\\\\\
 
 void SRTN()
@@ -131,7 +128,7 @@ void SRTN()
 	while(1)
 	{int x = getClk();
 		receiveProcess();
-		if(runningFlag==0 && !isEmpty(readyPriorityQueue))
+		if(runningFlag==0 && !isEmptyPriority(readyPriorityQueue))
 		{
 			runningFlag=1;
 			runningProcess=dequeuePriority(readyPriorityQueue);
@@ -151,12 +148,12 @@ void SRTN()
 				{
 					runningProcess.firstStart=x;
 					runningProcess.lastStart=x;
-					char string[40];
+					
 					char now[20];
 					char remaining[20];
 				// convert 123 to string [buf]
-					itoa(x, now, 20);
-					itoa(runningProcess.remain,remaining,20);
+					sprintf(now,"%d", x);
+					sprintf(remaining,"%d",runningProcess.remain);
 					execl("./process.out", "process.out ",now,remaining,NULL);
 					exit(0);
 				
@@ -226,11 +223,12 @@ void SRTN()
 	}
 
 
-
-}
-
 int main(int argc, char *argv[])
 {
+	readyQueue = (queue*)malloc(sizeof(queue));//for RR,FCFS
+	readyPriorityQueue= (priorityqueue*)malloc(sizeof(priorityqueue));//for SJF,HPF,SRTN
+	init(readyQueue);
+	initPriority(readyPriorityQueue);
     initClk();
 
     //TODO: implement the scheduler.
