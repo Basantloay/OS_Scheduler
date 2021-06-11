@@ -138,6 +138,7 @@ void init(queue *q)
 
 void enqueue(queue *q, PCB p1)
 {
+	p1.flag=1;
 	node* n=createNode(p1);
 	//Empty queue
 	if (q->front==NULL && q->rear==NULL)
@@ -196,25 +197,47 @@ void initPriority(priorityqueue *q)
 
 void enqueuePriority(priorityqueue *q, PCB p,int priorityofqueue)
 {
+	p.flag=1;
 	prioritynode* pn=createPriorityNode(p,priorityofqueue);
 	//Empty Priority queue
 	if (q->front==NULL && q->rear==NULL)
 	{
+		//printf("eeeeeeee\n");
 		q->front = pn;
     	q->rear = pn;
     	q->count+=1;
 	}
 	else
-	{
+	{	
+		if(pn->priorityofqueue < q->front->priorityofqueue)
+		{
+		//printf("first\n");
+			
+			pn->next=q->front;
+	 		q->front=pn;
+		
+		}
+		else if(pn->priorityofqueue >= q->rear->priorityofqueue )
+	 	{
+	 	//printf("second\n");
+	 		q->rear->next=pn;
+	 		q->rear=pn;
+	 		
+	 	}
+	 	
+		else
+		{
+		//printf("AAAA\n");
 		prioritynode* temp=q->front;
 		prioritynode* tempnext=q->front->next;
-		while(temp!=NULL &&tempnext!=NULL&&temp->priorityofqueue>=tempnext->priorityofqueue)
+		while(temp!=NULL && tempnext!=NULL && temp->next->priorityofqueue <= pn->priorityofqueue)
 		{
 			temp=temp->next;
-			tempnext=tempnext->next;
+			tempnext=temp->next;
 		}
 		pn->next=temp->next;
 	 	temp->next=pn;
+	 	}
 	}
 	
 }
