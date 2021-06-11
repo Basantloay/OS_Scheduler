@@ -92,7 +92,6 @@ int main(int argc, char *argv[])
     // 4. Use this function after creating the clock process to initialize clock.
     initClk();
     // To get time use this function. 
-    printf("Current Time is %d\n", x);
     // TODO Generation Main Loop
     // 5. Create a data structure for processes and provide it with its parameters.
     int x = getClk();
@@ -107,7 +106,7 @@ int main(int argc, char *argv[])
     msgq_id = msgget(key_id, 0666 | IPC_CREAT);
 
     buff.mtype = 1;
-    
+
     if (msgq_id == -1)
     {
         perror("Error in create");
@@ -115,7 +114,7 @@ int main(int argc, char *argv[])
     }
 
     i = 0;
-    int x = getClk();
+    x = getClk();
     int send_val;
 
     while(true)
@@ -123,9 +122,10 @@ int main(int argc, char *argv[])
         x = getClk();
         while(processArray[i].arrivaltime == x)
         {
+            printf("Current Time is %d\n", x);
             buff.d = processArray[i];
             send_val = msgsnd(msgq_id, &buff, sizeof(buff.d), !IPC_NOWAIT);
-            if (send_val_up == -1)
+            if (send_val == -1)
                 perror("Errror in send");
             i++;
         }

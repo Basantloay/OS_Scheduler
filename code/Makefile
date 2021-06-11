@@ -1,10 +1,11 @@
 build:
+	gcc headers.h
 	gcc process_generator.c -o process_generator.out
 	gcc clk.c -o clk.out
-
 	gcc process.c -o process.out
 	gcc test_generator.c -o test_generator.out
 	gcc testq.c -o testq.out
+
 	
 clean:
 	rm -f *.out  
