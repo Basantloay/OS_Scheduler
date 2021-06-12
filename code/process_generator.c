@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 		    
 		    scanf("%d", &algo);
 		    if(algo>5 || algo<1)
-		    	printf("\n Invalid Input for Number of Scheduling Algorithm !!!");
+		    	printf("\n    Invalid Input for Number of Scheduling Algorithm !!!");
 		    else 
 		    	break;
     	}
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
             if(q>0)
             	break;
             else
-            	printf("\n Invalid Input for Quantum Q !!!");
+            	printf("\n    Invalid Input for Quantum Q !!!");
         }
    
 
@@ -108,11 +108,11 @@ int main(int argc, char *argv[])
         execl("./clk.out", "clk.out", NULL);
     }
 
-    // pidS = fork();
-    // if(pidS ==0)
-    // {
-    //     execl("./scheduler.out", "scheduler.out", algo, q);
-    // }
+     pidS = fork();
+     if(pidS ==0)
+     {
+         execl("./scheduler.out", "scheduler.out", algo, q,NULL);
+     }
 
 
     // 4. Use this function after creating the clock process to initialize clock.
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
     
     msgq_id = msgget(key_id, 0666 | IPC_CREAT);
 
-    buff.mtype = 1;
+    buff.mtype = 7;
 
     if (msgq_id == -1)
     {
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
     while(true)
     {
         x = getClk();
-        while(processArray[i].arrivaltime == x)
+        while(processArray[i].arrivaltime == x&&pidS==0)
         {
             printf("Current Time is %d\n", x);
             buff.d = processArray[i];
