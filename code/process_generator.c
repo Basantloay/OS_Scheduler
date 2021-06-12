@@ -106,12 +106,22 @@ int main(int argc, char *argv[])
     if(pidC ==0)
     {
         execl("./clk.out", "clk.out", NULL);
+        exit(0);
     }
 
      pidS = fork();
      if(pidS ==0)
      {
-         execl("./scheduler.out", "scheduler.out", algo, q,NULL);
+     	char algostr[20];
+     	sprintf(algostr,"%d", algo);
+     	char qstr[20];
+     	sprintf(qstr,"%d", q);
+     	char countstr[20];
+     	sprintf(countstr,"%d", count);
+     	
+         execl("./scheduler.out", "scheduler.out", algostr,qstr,countstr,NULL);
+         printf("hena");
+         exit(0);
      }
 
 
@@ -146,7 +156,7 @@ int main(int argc, char *argv[])
     while(true)
     {
         x = getClk();
-        while(processArray[i].arrivaltime == x&&pidS==0)
+        while(processArray[i].arrivaltime == x )//&& pidS==0)
         {
             printf("Current Time is %d\n", x);
             buff.d = processArray[i];
