@@ -13,6 +13,12 @@ int algorithmnum;
 key_t key_id;
 int msgq_id;
 struct msgbuff buff;
+
+key_t key_id_process;
+int msgq_id_process;
+struct msgbuff_process buff_process;
+
+
 //////// get process from message buffer \\\\\\\\\\\\\\\\\
 
 void receiveProcess()
@@ -34,7 +40,8 @@ void receiveProcess()
     		receivedProcess.firstStart=0;
     		receivedProcess.lastStart=0;
     		receivedProcess.finish=0;
-    		receivedProcess.totalTime=0;
+    		receivedProcess.totalTime=buff.d.runningtime;
+    		receivedProcess.wait=0;
     		receivedProcess.TA=0;
     		receivedProcess.WTA=0;
     		receivedProcess.flag=1;
@@ -66,6 +73,17 @@ void receiveProcess()
 
 }
 
+void sendCurrentRemain()
+{
+	
+	buff_process.current=getClk();
+	buff_process.remain=runningProcess.remain;
+	int send_val_process;
+	 send_val_process= msgsnd(msgq_id_process, &buff_process, sizeof(buff_process.current)+sizeof(buff_process.remain), !IPC_NOWAIT);
+    if (send_val_process == -1)
+    	perror("Errror in send");
+
+}
 ///////////////// Round-Robin RR Algorithm \\\\\\\\\\\\\\\
 
 void RR()
@@ -114,6 +132,7 @@ FILE *f3 = fopen("test.log", "a+");
 					char remaining[20];
 				// convert 123 to string [buf]
 					sprintf(now,"%d", x);
+					sendCurrentRemain();
 					sprintf(remaining,"%d",runningProcess.remain);
 					execl("./process.out", "process.out ",now,remaining,NULL);
 					exit(0);
@@ -136,6 +155,7 @@ FILE *f3 = fopen("test.log", "a+");
    				fprintf(f,"At time %d process %d resumed arr %d total %d remanin %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
    				fclose(f);
 				runningProcess.lastStart=x;
+				sendCurrentRemain();
 				kill(runningProcess.pid,SIGCONT); 
 			
 			}
@@ -149,6 +169,7 @@ FILE *f3 = fopen("test.log", "a+");
 				runningFlag=0;
 				runningProcess.finish=getClk();
 				runningProcess.remain-=(getClk()-runningProcess.lastStart);
+				sendCurrentRemain();
 				kill(runningProcess.pid,SIGCONT);
 				if(runningProcess.remain==0)
 				{
@@ -172,7 +193,8 @@ FILE *f3 = fopen("test.log", "a+");
 				
 				
 				
-				}
+				}else
+				sendCurrentRemain();
 				
 			}
 		
@@ -297,6 +319,11 @@ int main(int argc, char *argv[])
 	initPriority(readyPriorityQueue);
 	key_id = ftok("keyfile", 65);    
     msgq_id = msgget(key_id, 0666 | IPC_CREAT);
+    key_id_process = ftok("keyfile", 67);    
+    
+	msgq_id_process = msgget(key_id_process, 0666 | IPC_CREAT);
+
+	buff_process.mtype = 5;
     buff.mtype = 7;
     initClk();
 	algorithmnum=atoi(argv[1]);

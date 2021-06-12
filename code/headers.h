@@ -101,6 +101,13 @@ struct msgbuff
     int count;
 };
 
+struct msgbuff_process
+{
+    long mtype;
+    int current;
+    int remain;
+    int count;
+};
 ////////////////// Node \\\\\\\\\\\\\\\\
 
 typedef struct Node

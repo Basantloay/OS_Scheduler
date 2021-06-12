@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     if(pidC ==0)
     {
         execl("./clk.out", "clk.out", NULL);
-        exit(0);
+        //exit(0);
     }
 
      pidS = fork();
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
      	sprintf(countstr,"%d", count);
      	
          execl("./scheduler.out", "scheduler.out", algostr,qstr,countstr,NULL);
-         printf("hena");
+         //printf("hena");
          exit(0);
      }
 
