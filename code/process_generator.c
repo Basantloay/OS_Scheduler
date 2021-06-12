@@ -68,11 +68,37 @@ int main(int argc, char *argv[])
         int q = -1;
         int algo = -1;
         int pidC,pidS;
-        algo = argv[1];
-        if (argc > 2)
+        //algo = argv[1];
+        //if (argc > 2)
+        //{
+        //    q = argv[2];
+        //}     
+		while (true)
+    	{
+			printf("\n1 ===> FCFS");
+		    printf("\n2 ===> SJF");
+		    printf("\n3 ===> HPF");
+		    printf("\n4 ===> SRTN");
+		    printf("\n5 ===> RR");
+		    printf("\nEnter The Number Of Scheduling Algorithm :");
+		    
+		    scanf("%d", &algo);
+		    if(algo>5 || algo<1)
+		    	printf("\n Invalid Input for Number of Scheduling Algorithm !!!");
+		    else 
+		    	break;
+    	}
+
+        while (algo==5 )
         {
-            q = argv[2];
-        }     
+            printf("\nEnter Quantum Number Q For RR algorithm:");
+            scanf("%d", &q);
+            if(q>0)
+            	break;
+            else
+            	printf("\n Invalid Input for Quantum Q !!!");
+        }
+   
 
     // 3. Initiate and create the scheduler and clock processes.
 
