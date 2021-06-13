@@ -126,11 +126,7 @@ FILE *f3 = fopen("test.log", "a+");
    	
    	fclose(f3);
 				
-				f = fopen("scheduler.log", "a+");
 				
-   				fprintf(f,"At time %d process %d started arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
-   				
-   				fclose(f);
 				int pid1=fork();
 				if(pid1==-1)
 					printf("EEEEEEEEEEE");
@@ -157,6 +153,11 @@ FILE *f3 = fopen("test.log", "a+");
 					runningProcess.lastStart=x;
 					runningProcess.pid=pid1;
 					runningProcess.wait+=(runningProcess.lastStart-runningProcess.process.arrivaltime);
+					f = fopen("scheduler.log", "a+");
+				
+   				fprintf(f,"At time %d process %d started arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
+   				
+   				fclose(f);
 				}
 			
 			
@@ -273,9 +274,7 @@ FILE *f3 = fopen("test.log", "a+");
    	
    	fclose(f3);
 				
-				f = fopen("scheduler.log", "a+");
-   				fprintf(f,"At time %d process %d started arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
-   				fclose(f);
+				
 				int pid2=fork();
 				if(pid2==-1)
 					printf("EEEEEEEEEEE");
@@ -291,10 +290,10 @@ FILE *f3 = fopen("test.log", "a+");
    	fprintf(f3,"executed process %d	%d \n",runningProcess.remain,runningProcess.process.runningtime);
    	
    	fclose(f3);
-					execl("./process.out", "process.out ",now2,remaining2,(char*)0);
+					execl("./process.out", "process.out ",now2,remaining2,NULL);
 					
 					//sendCurrentRemain();
-					exit(0);
+					//exit(0);
 				
 				}
 				else//parent
@@ -304,6 +303,9 @@ FILE *f3 = fopen("test.log", "a+");
 					runningProcess.lastStart=x;
 					runningProcess.pid=pid2;
 					runningProcess.wait+=(runningProcess.lastStart-runningProcess.process.arrivaltime);
+					f = fopen("scheduler.log", "a+");
+   				fprintf(f,"At time %d process %d started arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
+   				fclose(f);
 				}
 			
 			
@@ -326,7 +328,7 @@ FILE *f3 = fopen("test.log", "a+");
 		}
 		else if (runningFlag==1)
 		{	x=getClk();
-			if(readyPriorityQueue->front->priorityofqueue<runningProcess.remain)
+			if(readyPriorityQueue->front!=NULL&&readyPriorityQueue->front->priorityofqueue<runningProcess.remain)
 			{
 				f3 = fopen("test.log", "a+");	
    	fprintf(f3,"corner case %d	%d \n",x,runningProcess.lastStart);
@@ -388,19 +390,10 @@ int main(int argc, char *argv[])
     msgq_id = msgget(key_id, 0666 | IPC_CREAT);
     key_id_process = ftok("keyfile", 67);    
     shmid = shmget(key_id_process, 4096, IPC_CREAT | 0644);
-    if (shmid == -1)
-    {
-        perror("Error in create");
-        exit(-1);
-    }
-    else
-        printf("\nShared memory ID = %d\n", shmid);
+    
+    printf("\nShared memory ID = %d\n", shmid);
     shmaddr2 = shmat(shmid, (void *)0, 0);
-    if (shmaddr2 == -1)
-    {
-        perror("Error in attach in reader");
-        exit(-1);
-    }
+    
 	//msgq_id_process = msgget(key_id_process, 0666 | IPC_CREAT);
 
 	//buff_process.mtype = 5;
@@ -413,7 +406,7 @@ int main(int argc, char *argv[])
 	actualcount=0;
 	FILE *f2 = fopen("test.log", "a+");	
    	fprintf(f2,"ENTERED SCHEDULER \n");
-   	fprintf(f2,"%d	%d	%d",algorithmnum,quantum,count);
+   	fprintf(f2,"%d	%d	%d\n",algorithmnum,quantum,count);
    	fclose(f2);
    	initClk();
 	if(algorithmnum==1)//FCFS

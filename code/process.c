@@ -27,11 +27,7 @@ int main(int agrc, char *argv[])
     else
         printf("\nShared memory ID = %d\n", shmid);
     void *shmaddr = shmat(shmid, (void *)0, 0);
-    if (shmaddr == -1)
-    {
-        perror("Error in attach in reader");
-        exit(-1);
-    }
+    
     //TODO The process needs to get the remaining time from somewhere
     //remainingtime = ??;
     remainingtime =atoi(argv[1]);
@@ -49,10 +45,12 @@ int main(int agrc, char *argv[])
     		current=buff.current;
     		*/
    	char remain[20];
+   	for(int i=0;i<sizeof(remain);i++)
+            		remain[i]='\0';
    	strcpy(remain,(char *)shmaddr);
    	remainingtime=atoi(remain);
    	FILE *f3 = fopen("test.log", "a+");	
-   			fprintf(f3,"process %d  \n",remainingtime);
+   			fprintf(f3,"process %d %s \n",remainingtime,(char *)shmaddr);
    	
    	fclose(f3);}
     
