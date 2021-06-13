@@ -160,9 +160,9 @@ int main(int argc, char *argv[])
         {
             printf("Current Time is %d\n", x);
             buff.d = processArray[i];
-            send_val = msgsnd(msgq_id, &buff, sizeof(buff.d), !IPC_NOWAIT);
+            send_val = msgsnd(msgq_id, &buff, sizeof(buff.d), IPC_NOWAIT);
             if (send_val == -1)
-                perror("Errror in send");
+                perror("Errror in send process");
             i++;
         }
 

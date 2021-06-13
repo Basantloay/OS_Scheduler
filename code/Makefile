@@ -9,7 +9,7 @@ build:
 
 	
 clean:
-	rm -f *.out  
+	rm -f *.out  scheduler.log test.log
 
 all: clean build run
 

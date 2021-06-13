@@ -23,9 +23,15 @@ int main(int agrc, char *argv[])
     {
         int rec_val= msgrcv(msgq_id, &buff, (sizeof(buff.remain)+sizeof(buff.current)), 0, IPC_NOWAIT);
     	if(rec_val!=-1)
+    		{
     		remainingtime=buff.remain;
+    		current=buff.current;
+    		FILE *f3 = fopen("test.log", "a+");	
+   			fprintf(f3,"process %d 	%d \n",remainingtime,buff.current);
+   	
+   	fclose(f3);}
     }
-	//kill(getppid(),SIGUSR1);
+	kill(getppid(),SIGUSR1);
     destroyClk(false);
 
     return 0;
