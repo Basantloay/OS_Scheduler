@@ -18,8 +18,9 @@ int x;
 key_t key_id_process;
 int msgq_id_process;
 struct msgbuff_process buff_process;
-
-
+int shmid;
+void *shmaddr2;
+ 
 void USRhandler(int signum);
 //////// get process from message buffer \\\\\\\\\\\\\\\\\
 
@@ -79,13 +80,17 @@ void receiveProcess()
 
 void sendCurrentRemain()
 {
-	
+	/*
 	buff_process.current=x;
 	buff_process.remain=runningProcess.remain;
 	int send_val_process;
-	 send_val_process= msgsnd(msgq_id_process, &buff_process, sizeof(buff_process.current)+sizeof(buff_process.remain), !IPC_NOWAIT);
+	 send_val_process= msgsnd(msgq_id_process, &buff_process, sizeof(buff_process.current)+sizeof(buff_process.remain), IPC_NOWAIT);
     if (send_val_process == -1)
     	perror("Errror in send");
+    */
+    char now[20];
+    sprintf(now,"%d", x);
+    strcpy((char *)shmaddr2, now);
 
 }
 ///////////////// Round-Robin RR Algorithm \\\\\\\\\\\\\\\
@@ -286,9 +291,9 @@ FILE *f3 = fopen("test.log", "a+");
    	fprintf(f3,"executed process %d	%d \n",runningProcess.remain,runningProcess.process.runningtime);
    	
    	fclose(f3);
-					execl("./process.out", "process.out ",now2,remaining2,(char*)0 );
+					execl("./process.out", "process.out ",now2,remaining2,(char*)0);
 					
-					sendCurrentRemain();
+					//sendCurrentRemain();
 					exit(0);
 				
 				}
@@ -312,9 +317,9 @@ FILE *f3 = fopen("test.log", "a+");
    				fprintf(f,"At time %d process %d resumed arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
    				fclose(f);
 				
-				
-				kill(runningProcess.pid,SIGCONT); 
 				sendCurrentRemain();
+				kill(runningProcess.pid,SIGCONT); 
+				
 			}
 		
 		
@@ -382,10 +387,23 @@ int main(int argc, char *argv[])
 	key_id = ftok("keyfile", 65);    
     msgq_id = msgget(key_id, 0666 | IPC_CREAT);
     key_id_process = ftok("keyfile", 67);    
-    
-	msgq_id_process = msgget(key_id_process, 0666 | IPC_CREAT);
+    shmid = shmget(key_id_process, 4096, IPC_CREAT | 0644);
+    if (shmid == -1)
+    {
+        perror("Error in create");
+        exit(-1);
+    }
+    else
+        printf("\nShared memory ID = %d\n", shmid);
+    shmaddr2 = shmat(shmid, (void *)0, 0);
+    if (shmaddr2 == -1)
+    {
+        perror("Error in attach in reader");
+        exit(-1);
+    }
+	//msgq_id_process = msgget(key_id_process, 0666 | IPC_CREAT);
 
-	buff_process.mtype = 5;
+	//buff_process.mtype = 5;
     buff.mtype = 7;
     
 	algorithmnum=atoi(argv[1]);
