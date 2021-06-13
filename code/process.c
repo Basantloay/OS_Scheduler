@@ -19,6 +19,10 @@ int main(int agrc, char *argv[])
     //remainingtime = ??;
     remainingtime =atoi(argv[1]);
 	current=atoi(argv[2]);
+	FILE *f3 = fopen("test.log", "a+");	
+   			fprintf(f3,"last check %d 	%d \n",remainingtime,current);
+   	
+   	fclose(f3);
     while (remainingtime > 0)
     {
         int rec_val= msgrcv(msgq_id, &buff, (sizeof(buff.remain)+sizeof(buff.current)), 0, IPC_NOWAIT);

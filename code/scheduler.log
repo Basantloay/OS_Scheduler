@@ -1,9 +1,1 @@
-At time 8 process 2 started arr 8 total 7 remain 7 wait 0
-At time 11 process 2 stopped arr 8 total 7 remain 4 wait 0 
-At time 11 process 2 resumed arr 8 total 7 remain 4 wait 0
-At time 14 process 2 stopped arr 8 total 7 remain 1 wait 0 
-At time 14 process 2 resumed arr 8 total 7 remain 1 wait 0
-At time 15 process 2 finished arr 8 total 7 remain 0 wait 0 TA 7 WTA 1.000000 
-At time 18 process 3 started arr 18 total 3 remain 3 wait 0
-At time 18 process 3 stopped arr 18 total 3 remain 3 wait 0 
-At time 18 process 3 resumed arr 18 total 3 remain 3 wait 0
+At time 6 process 1 started arr 6 total 5 remain 5 wait 0

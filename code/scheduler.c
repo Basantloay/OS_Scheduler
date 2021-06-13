@@ -140,8 +140,8 @@ FILE *f3 = fopen("test.log", "a+");
 					sprintf(now,"%d", x);
 					
 					sprintf(remaining,"%d",runningProcess.remain);
-					execl("./process.out", "process.out ",now,remaining,NULL);
-					sendCurrentRemain();
+					execl("./process.out", "process.out ",now,remaining,(char*)0 );
+					//sendCurrentRemain();
 					exit(0);
 				
 				}
@@ -176,11 +176,15 @@ FILE *f3 = fopen("test.log", "a+");
 		{	x=getClk();
 			if((x-runningProcess.lastStart)>=quantum &&quantum<=runningProcess.remain)
 			{
+				f3 = fopen("test.log", "a+");	
+   	fprintf(f3,"corner case %d	%d \n",x,runningProcess.lastStart);
+   	
+   	fclose(f3);
 				runningFlag=0;
 				runningProcess.finish=x;
 				runningProcess.remain-=(x-runningProcess.lastStart);
 				sendCurrentRemain();
-				kill(runningProcess.pid,SIGSTOP);
+				
 				if(runningProcess.remain<=0)
 				{
 					runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
@@ -201,16 +205,16 @@ FILE *f3 = fopen("test.log", "a+");
 				
 				}
 				
-				
+				kill(runningProcess.pid,SIGSTOP);
 				
 				}
-				else if(runningProcess.remain<=quantum&&(x-runningProcess.lastStart)>=runningProcess.remain)
+				else if(runningProcess.remain<quantum&&(x-runningProcess.lastStart)>=runningProcess.remain)
 				{
 					runningFlag=0;
 				runningProcess.finish=x;
 				runningProcess.remain-=(x-runningProcess.lastStart);
 				sendCurrentRemain();
-				kill(runningProcess.pid,SIGSTOP);
+				
 				
 					runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
 					runningProcess.WTA=(float)runningProcess.TA/(float)runningProcess.process.runningtime;
@@ -218,7 +222,7 @@ FILE *f3 = fopen("test.log", "a+");
    					fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %f \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,runningProcess.WTA);
    					fclose(f);
 					actualcount++;
-				
+				kill(runningProcess.pid,SIGSTOP);
 				
 				}
 				else
@@ -234,84 +238,108 @@ FILE *f3 = fopen("test.log", "a+");
 	
 	}
 
-
-
 ///////////////// Shortest Remaining Time Next SRTN Algorithm \\\\\\\\\\\\
 
 void SRTN()
 {
+FILE *f3 = fopen("test.log", "a+");	
+   	fprintf(f3,"ENTERED SRTN \n");
+   	
+   	fclose(f3);
+   	
 	while(1)
-	{int x = getClk();
+	{
+		
 		receiveProcess();
 		if(runningFlag==0 && !isEmptyPriority(readyPriorityQueue))
-		{
+		{x = getClk();
 			runningFlag=1;
 			runningProcess=dequeuePriority(readyPriorityQueue);
 			//first time enter the scheduler need forking
-			if(runningProcess.remain==runningProcess.process.runningtime)//&& runningProcess.pid==-1)
+			f3 = fopen("test.log", "a+");	
+   			fprintf(f3,"ENTERED SRTN %d	%d 		%d \n",runningProcess.remain,runningProcess.process.runningtime,runningProcess.pid);
+   	
+   			fclose(f3);
+   	
+			if( runningProcess.pid==-1)
 			{
+				f3 = fopen("test.log", "a+");	
+   	fprintf(f3,"gowaaa SRTN %d	%d \n",runningProcess.remain,runningProcess.process.runningtime);
+   	
+   	fclose(f3);
 				
 				f = fopen("scheduler.log", "a+");
-				
    				fprintf(f,"At time %d process %d started arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
-   				
    				fclose(f);
-				int pid1=fork();
-				if(pid1==-1)
+				int pid2=fork();
+				if(pid2==-1)
 					printf("EEEEEEEEEEE");
-				if(pid1==0)//child
+				else if(pid2==0)//child
 				{
-					runningProcess.firstStart=x;
-					runningProcess.lastStart=x;
-					
-					char now[20];
-					char remaining[20];
+					char now2[20];
+					char remaining2[20];
 				// convert 123 to string [buf]
-					sprintf(now,"%d", x);
-					sprintf(remaining,"%d",runningProcess.remain);
-					execl("./process.out", "process.out ",now,remaining,NULL);
+					sprintf(now2,"%d", x);
+					
+					sprintf(remaining2,"%d",runningProcess.remain);
+					f3 = fopen("test.log", "a+");	
+   	fprintf(f3,"executed process %d	%d \n",runningProcess.remain,runningProcess.process.runningtime);
+   	
+   	fclose(f3);
+					execl("./process.out", "process.out ",now2,remaining2,(char*)0 );
+					
+					sendCurrentRemain();
 					exit(0);
 				
 				}
 				else//parent
 				{
 					
-					runningProcess.pid=pid1;
-				
+					runningProcess.firstStart=x;
+					runningProcess.lastStart=x;
+					runningProcess.pid=pid2;
+					runningProcess.wait+=(runningProcess.lastStart-runningProcess.process.arrivaltime);
 				}
 			
 			
 			
 			}
 			else
-			{
+			{runningProcess.lastStart=x;
+				runningProcess.wait+=(runningProcess.lastStart-runningProcess.finish);
 				
 				f = fopen("scheduler.log", "a+");	
    				fprintf(f,"At time %d process %d resumed arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
    				fclose(f);
-				runningProcess.lastStart=x;
+				
+				
 				kill(runningProcess.pid,SIGCONT); 
-			
+				sendCurrentRemain();
 			}
 		
 		
 		}
 		else if (runningFlag==1)
-		{
-			if(readyPriorityQueue->front!=NULL&&readyPriorityQueue->front->priorityofqueue < runningProcess.remain)
+		{	x=getClk();
+			if(readyPriorityQueue->front->priorityofqueue<runningProcess.remain)
 			{
+				f3 = fopen("test.log", "a+");	
+   	fprintf(f3,"corner case %d	%d \n",x,runningProcess.lastStart);
+   	
+   	fclose(f3);
 				runningFlag=0;
-				runningProcess.finish=getClk();
-				runningProcess.remain-=(getClk()-runningProcess.lastStart);
-				kill(runningProcess.pid,SIGSTOP);
-				if(runningProcess.remain==0)
+				runningProcess.finish=x;
+				runningProcess.remain-=(x-runningProcess.lastStart);
+				sendCurrentRemain();
+				
+				if(runningProcess.remain<=0)
 				{
 					runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
 					runningProcess.WTA=(float)runningProcess.TA/(float)runningProcess.process.runningtime;
 					f = fopen("scheduler.log", "a+");	
    					fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %f \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,runningProcess.WTA);
    					fclose(f);
-					count++;
+					actualcount++;
 				
 				}
 				else
@@ -320,22 +348,27 @@ void SRTN()
 					f = fopen("scheduler.log", "a+");	
    					fprintf(f,"At time %d process %d stopped arr %d total %d remain %d wait %d \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
    					fclose(f);
-					enqueue(readyQueue,runningProcess);
+					enqueuePriority(readyPriorityQueue,runningProcess,runningProcess.remain);
 				
 				}
 				
-				
+				kill(runningProcess.pid,SIGSTOP);
 				
 				}
+				
+				else
+					sendCurrentRemain();
 				
 			}
-		
+		if(actualcount>=count)
+			break;
 		
 		}
 	
 	
 	
 	}
+
 
 
 int main(int argc, char *argv[])
@@ -358,7 +391,7 @@ int main(int argc, char *argv[])
 	algorithmnum=atoi(argv[1]);
 	quantum=atoi(argv[2]);
 	count=atoi(argv[3]);
-	//count=count-1;//TO BE TESTED
+	count=count-1;//TO BE TESTED
 	actualcount=0;
 	FILE *f2 = fopen("test.log", "a+");	
    	fprintf(f2,"ENTERED SCHEDULER \n");
