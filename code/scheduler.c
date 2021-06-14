@@ -1,4 +1,5 @@
 #include "headers.h"
+#include <math.h>
 ///////////////// Global data members \\\\\\\\\\\\\\
 
 queue *readyQueue;
@@ -22,10 +23,11 @@ int shmid;
 void *shmaddr2;
  
 void USRhandler(int signum);
-long totalWTA=0;
+double totalWTA=0;
 long totalWaiting=0;
 long totalRunning=0;
 float utilization=0;
+
 //////// get process from message buffer \\\\\\\\\\\\\\\\\
 
 void receiveProcess()
@@ -99,17 +101,82 @@ void sendCurrentRemain()
 
 }
 
+void sendRemain()
+{
+	/*
+	buff_process.current=x;
+	buff_process.remain=runningProcess.remain;
+	int send_val_process;
+	 send_val_process= msgsnd(msgq_id_process, &buff_process, sizeof(buff_process.current)+sizeof(buff_process.remain), IPC_NOWAIT);
+    if (send_val_process == -1)
+    	perror("Errror in send");
+    */
+    char remain[20];
+    int num=runningProcess.remain;
+    sprintf(remain,"%d", num);
+    strcpy((char *)shmaddr2, remain);
+
+}
+//////////// Printing Finishing statement of process \\\\
+
+void printingFinish()
+{
+
+	f = fopen("scheduler.log", "a+");
+	if(fmodf(runningProcess.WTA,(float)1)==(float)0)
+   		fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %d \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,(int)runningProcess.WTA);
+  
+   	else if(fmodf(runningProcess.WTA/0.1,1)==(float)0)
+   		fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %0.1f \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,runningProcess.WTA);
+  
+   	else	
+   		fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %0.2f \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,runningProcess.WTA);
+   	fclose(f);
+
+}
+//////////// Printing Performance of Scheduler \\\\\\\\\\
+
 void printingPerformance()
 {
-	float avgWTA=(float)totalWTA/count;
+	float avgWTA=totalWTA/(double)count;
 	float avgWaiting=(float)totalWaiting/count;
 	utilization=((float)totalRunning/x)*100;
-	FILE *f4 = fopen("scheduler.perf", "a+");	
-   	fprintf(f4,"CPU utilization = %f %%\n",utilization);
-   	fprintf(f4,"Avg WTA = %f\n",avgWTA);
-   	fprintf(f4,"Avg Waiting = %f\n",avgWaiting);
+	FILE *f4 = fopen("scheduler.perf", "a+");
+	
+	if(fmodf(utilization,(float)1)==(float)0)
+   		fprintf(f4,"CPU utilization = %d %%\n",(int)utilization);
+   	else if(fmodf(utilization/0.1,1)==(float)0)
+   		fprintf(f4,"CPU utilization = %0.1f %%\n",utilization);
+   	else
+   		fprintf(f4,"CPU utilization = %0.2f %%\n",utilization);
+   		
+   	if(fmodf(avgWTA,(float)1)==(float)0)
+   		fprintf(f4,"Avg WTA = %d\n",(int)avgWTA);
+   	else if(fmodf(avgWTA/0.1,1)==(float)0)
+   		fprintf(f4,"Avg WTA = %0.1f\n",avgWTA);
+   	else 
+   		fprintf(f4,"Avg WTA = %0.2f\n",avgWTA);
+   
+   	if(fmodf(avgWaiting,(float)1)==(float)0)
+   		fprintf(f4,"Avg Waiting = %d\n",(int)avgWaiting);
+   	else if(fmodf(avgWaiting/0.1,1)==(float)0)
+   		fprintf(f4,"Avg Waiting = %0.1f\n",avgWaiting);
+   	else
+   		fprintf(f4,"Avg Waiting = %0.2f\n",avgWaiting);
+   		
    	fclose(f4);
 }
+/////////////// Clean Resources \\\\\\\\\\\\\\\\\\\\\\\\\\
+
+void cleanUp()
+{
+	msgctl(msgq_id,IPC_RMID,(struct msqid_ds *)0);
+	shmdt(shmaddr2);
+	shmctl(shmid, IPC_RMID, (struct shmid_ds *)0);
+	//exit(0);
+
+}
+
 ///////////////// Round-Robin RR Algorithm \\\\\\\\\\\\\\\
 
 void RR()
@@ -126,8 +193,9 @@ FILE *f3 = fopen("test.log", "a+");
 		//f3 = fopen("test.log", "a+");	
    		//fprintf(f3,"b3d receive \n");
    		//fclose(f3);
+   		x = getClk();
 		if(runningFlag==0 && !isEmpty(readyQueue))
-		{x = getClk();
+		{
 			runningFlag=1;
 			runningProcess=dequeue(readyQueue);
 			//first time enter the scheduler need forking
@@ -169,7 +237,7 @@ FILE *f3 = fopen("test.log", "a+");
 					runningProcess.firstStart=x;
 					runningProcess.lastStart=x;
 					runningProcess.pid=pid1;
-					runningProcess.wait+=(runningProcess.lastStart-runningProcess.process.arrivaltime);
+					runningProcess.wait=(runningProcess.lastStart-runningProcess.process.arrivaltime);
 					f = fopen("scheduler.log", "a+");
 				
    				fprintf(f,"At time %d process %d started arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
@@ -182,7 +250,7 @@ FILE *f3 = fopen("test.log", "a+");
 			}
 			else
 			{runningProcess.lastStart=x;
-				runningProcess.wait+=(runningProcess.lastStart-runningProcess.finish);
+			runningProcess.wait+=(runningProcess.lastStart-runningProcess.finish);
 				
 				f = fopen("scheduler.log", "a+");	
    				fprintf(f,"At time %d process %d resumed arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
@@ -190,13 +258,13 @@ FILE *f3 = fopen("test.log", "a+");
 				
 				
 				kill(runningProcess.pid,SIGCONT); 
-				sendCurrentRemain();
+				sendRemain();
 			}
 		
 		
 		}
 		else if (runningFlag==1)
-		{	x=getClk();
+		{	//x=getClk();
 			if((x-runningProcess.lastStart)>=quantum &&quantum<=runningProcess.remain)
 			{
 				f3 = fopen("test.log", "a+");	
@@ -212,12 +280,10 @@ FILE *f3 = fopen("test.log", "a+");
 				{
 					runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
 					runningProcess.WTA=(float)runningProcess.TA/(float)runningProcess.process.runningtime;
-					totalWTA+=(long)runningProcess.WTA;
+					totalWTA+=(double)runningProcess.WTA;
 					totalWaiting+=(long)runningProcess.wait;
 					totalRunning+=(long)runningProcess.totalTime;
-					f = fopen("scheduler.log", "a+");	
-   					fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %f \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,runningProcess.WTA);
-   					fclose(f);
+					printingFinish();
 					actualcount++;
 				
 				}
@@ -239,24 +305,22 @@ FILE *f3 = fopen("test.log", "a+");
 					runningFlag=0;
 				runningProcess.finish=x;
 				runningProcess.remain-=(x-runningProcess.lastStart);
-				sendCurrentRemain();
+				sendRemain();
 				
 				
 					runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
 					runningProcess.WTA=(float)runningProcess.TA/(float)runningProcess.process.runningtime;
-					totalWTA+=(long)runningProcess.WTA;
+					totalWTA+=(double)runningProcess.WTA;
 					totalWaiting+=(long)runningProcess.wait;
 					totalRunning+=(long)runningProcess.totalTime;
-					f = fopen("scheduler.log", "a+");	
-   					fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %f \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,runningProcess.WTA);
-   					fclose(f);
+					printingFinish();
 					actualcount++;
 				kill(runningProcess.pid,SIGSTOP);
 				
 				}
 				else
 				
-					sendCurrentRemain();
+					sendRemain();
 					
 				
 			}
@@ -370,12 +434,10 @@ FILE *f3 = fopen("test.log", "a+");
 				{
 					runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
 					runningProcess.WTA=(float)runningProcess.TA/(float)runningProcess.process.runningtime;
-					totalWTA+=(long)runningProcess.WTA;
+					totalWTA+=(double)runningProcess.WTA;
 					totalWaiting+=(long)runningProcess.wait;
 					totalRunning+=(long)runningProcess.totalTime;
-					f = fopen("scheduler.log", "a+");	
-   					fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %f \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,runningProcess.WTA);
-   					fclose(f);
+					printingFinish();
 					actualcount++;
 				
 				}
@@ -495,12 +557,10 @@ FILE *f3 = fopen("test.log", "a+");
 				
 					runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
 					runningProcess.WTA=(float)runningProcess.TA/(float)runningProcess.process.runningtime;
-					totalWTA+=(long)runningProcess.WTA;
+					totalWTA+=(double)runningProcess.WTA;
 					totalWaiting+=(long)runningProcess.wait;
 					totalRunning+=(long)runningProcess.totalTime;
-					f = fopen("scheduler.log", "a+");	
-   					fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %f \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,runningProcess.WTA);
-   					fclose(f);
+					printingFinish();
 					actualcount++;
 				
 				
@@ -609,12 +669,11 @@ FILE *f3 = fopen("test.log", "a+");
 				
 					runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
 					runningProcess.WTA=(float)runningProcess.TA/(float)runningProcess.process.runningtime;
-					totalWTA+=(long)runningProcess.WTA;
+					totalWTA+=(double)runningProcess.WTA;
 					totalWaiting+=(long)runningProcess.wait;
 					totalRunning+=(long)runningProcess.totalTime;
 					f = fopen("scheduler.log", "a+");	
-   					fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %f \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,runningProcess.WTA);
-   					fclose(f);
+   					printingFinish();
 					actualcount++;
 				
 				
@@ -695,7 +754,10 @@ int main(int argc, char *argv[])
 	{
 		RR();
 	}
-	
+	cleanUp();
+    
+    kill(getppid(),SIGUSR2);
+    //exit(0);
     destroyClk(true);
 }
 
@@ -709,12 +771,10 @@ void USRhandler(int signum)
 	{
 	runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
 	runningProcess.WTA=(float)runningProcess.TA/(float)runningProcess.process.runningtime;
-	totalWTA+=(long)runningProcess.WTA;
+	totalWTA+=(double)runningProcess.WTA;
 	totalWaiting+=(long)runningProcess.wait;
 	totalRunning+=(long)runningProcess.totalTime;
-	f = fopen("scheduler.log", "a+");	
-   	fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %f \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,runningProcess.WTA);
-   	fclose(f);
+	printingFinish();
 	count++;
 				
 	}

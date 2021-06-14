@@ -3,7 +3,7 @@
 
 
 void clearResources(int);
-
+void USR_handler(int signum);
 void readFile()
 {
 
@@ -12,6 +12,7 @@ void readFile()
 
 int main(int argc, char *argv[])
 {
+	signal(SIGUSR2,USR_handler);
     signal(SIGINT, clearResources);
     // TODO Initialization
     // 1. Read the input files.
@@ -173,7 +174,13 @@ int main(int argc, char *argv[])
 
 
 }
-
+void USR_handler(int signum)
+{
+	printf("Entered Signal");
+	kill(getpid(),SIGKILL);
+	
+	signal(SIGUSR2,USR_handler);
+}
 void clearResources(int signum)
 {
     //TODO Clears all resources in case of interruption
