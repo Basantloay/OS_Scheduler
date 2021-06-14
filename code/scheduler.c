@@ -696,6 +696,137 @@ FILE *f3 = fopen("test.log", "a+");
 	
 	}
 
+////////////////// Highest Priority First \\\\\\
+
+void HPF()
+{
+	FILE *f3 = fopen("test.log", "a+");
+	fprintf(f3, "ENTERED HPF \n");
+
+	fclose(f3);
+
+	while (1)
+	{
+
+		receiveProcess();
+		if (runningFlag == 0 && !isEmptyPriority(readyPriorityQueue))
+		{
+			x = getClk();
+			runningProcess = dequeuePriority(readyPriorityQueue);
+			runningProcess.wait = x - runningProcess.process.arrivaltime;
+			//first time enter the scheduler need forking
+			f3 = fopen("test.log", "a+");
+			fprintf(f3, "ENTERED HPF %d	%d 		%d \n", runningProcess.remain, runningProcess.process.runningtime, runningProcess.pid);
+
+			fclose(f3);
+
+			if (runningProcess.pid == -1)
+			{
+
+				int pid2 = fork();
+				if (pid2 == -1)
+				{
+				}
+				else if (pid2 == 0) //child
+				{
+					char now2[20];
+					char remaining2[20];
+					// convert 123 to string [buf]
+					sprintf(now2, "%d", x);
+
+					sprintf(remaining2, "%d", runningProcess.process.runningtime);
+					f3 = fopen("test.log", "a+");
+					fprintf(f3, "executed process %d	%d \n", runningProcess.remain, runningProcess.process.runningtime);
+
+					fclose(f3);
+					execl("./process.out", "process.out ", now2, remaining2, NULL);
+
+					//sendCurrentRemain();
+					exit(0);
+				}
+				else //parent
+				{
+
+					runningProcess.firstStart = x;
+					runningProcess.lastStart = x;
+					runningProcess.pid = pid2;
+					runningProcess.wait += (runningProcess.lastStart - runningProcess.process.arrivaltime);
+					runningFlag = 1;
+					f = fopen("scheduler.log", "a+");
+					fprintf(f, "At time %d process %d started arr %d total %d remain %d wait %d\n", x, runningProcess.process.id, runningProcess.process.arrivaltime, runningProcess.totalTime, runningProcess.remain, runningProcess.wait);
+					fclose(f);
+				}
+
+				kill(runningProcess.pid,SIGSTOP);
+
+			}
+			else
+			{
+				runningProcess.lastStart = x;
+				runningProcess.wait += (runningProcess.lastStart - runningProcess.finish);
+
+				f = fopen("scheduler.log", "a+");
+				fprintf(f, "At time %d process %d resumed arr %d total %d remain %d wait %d\n", x, runningProcess.process.id, runningProcess.process.arrivaltime, runningProcess.totalTime, runningProcess.remain, runningProcess.wait);
+				fclose(f);
+				kill(runningProcess.pid, SIGCONT);
+				runningFlag = 1;
+			}
+		}
+		else if (runningFlag == 1)
+		{
+			x = getClk();
+			if (!isEmptyPriority(readyPriorityQueue) || (readyPriorityQueue->front->priorityofqueue ==  runningProcess.process.priority))
+			{
+				f3 = fopen("test.log", "a+");
+				fprintf(f3, "corner case %d	%d \n", x, runningProcess.process.priority);
+				fclose(f3);
+				runningFlag = 0;
+				runningProcess.finish = x;
+				runningProcess.remain -= (x - runningProcess.lastStart);
+				sendCurrentRemain();
+
+				if (runningProcess.remain <= 0)
+				{
+					runningProcess.TA = runningProcess.finish - runningProcess.process.arrivaltime;
+					runningProcess.WTA = (float)runningProcess.TA / (float)runningProcess.process.runningtime;
+					totalWTA += (double)runningProcess.WTA;
+					totalWaiting += (long)runningProcess.wait;
+					totalRunning += (long)runningProcess.totalTime;
+					printingFinish();
+					actualcount++;
+				}
+
+				else
+				{	//runningProcess.remain-=(x-runningProcess.lastStart);
+					sendCurrentRemain();}
+
+				{
+
+					f = fopen("scheduler.log", "a+");
+					fprintf(f, "At time %d process %d stopped arr %d total %d remain %d wait %d \n", x, runningProcess.process.id, runningProcess.process.arrivaltime, runningProcess.totalTime, runningProcess.remain, runningProcess.wait);
+					fclose(f);
+					enqueuePriority(readyPriorityQueue, runningProcess, runningProcess.process.priority);
+				}
+
+				kill(runningProcess.pid, SIGSTOP);
+			}
+
+			else
+			{ //runningProcess.remain-=(x-runningProcess.lastStart);
+				sendCurrentRemain();
+			}
+		if(actualcount>=count)
+			break;
+
+		}
+
+	
+
+		if (actualcount >= count)
+			break;
+	}
+printingPerformance();
+}
 
 ////////////////////////////////////////////////
 int main(int argc, char *argv[])
@@ -743,7 +874,7 @@ int main(int argc, char *argv[])
 	else if(algorithmnum==3)//HPF
 	{
 	
-	
+		HPF();
 	}
 	else if(algorithmnum==4)//SRTN
 	{
