@@ -1,4 +1,5 @@
-#include <stdio.h> //if you don't use scanf/printf change this include
+
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
@@ -25,7 +26,7 @@ int *shmaddr; //
 
 int getClk()
 {
-    return *shmaddr;
+	return *shmaddr;
 }
 
 /*
@@ -34,15 +35,15 @@ int getClk()
 */
 void initClk()
 {
-    int shmid = shmget(SHKEY, 4, 0444);
-    while ((int)shmid == -1)
-    {
-        //Make sure that the clock exists
-        printf("Wait! The clock not initialized yet!\n");
-        sleep(1);
-        shmid = shmget(SHKEY, 4, 0444);
-    }
-    shmaddr = (int *)shmat(shmid, (void *)0, 0);
+	int shmid = shmget(SHKEY, 4, 0444);
+	while ((int)shmid == -1)
+	{
+		//Make sure that the clock exists
+		printf("Wait! The clock not initialized yet!\n");
+		sleep(1);
+		shmid = shmget(SHKEY, 4, 0444);
+	}
+	shmaddr = (int *)shmat(shmid, (void *)0, 0);
 }
 
 /*
@@ -55,22 +56,23 @@ void initClk()
 
 void destroyClk(bool terminateAll)
 {
-    shmdt(shmaddr);
-    if (terminateAll)
-    {
-        killpg(getpgrp(), SIGINT);
-    }
+	shmdt(shmaddr);
+	if (terminateAll)
+	{
+		killpg(getpgrp(), SIGINT);
+	}
 }
 
 ////////////////////// Process \\\\\\\\\\\\\\\\\\\\\\\\
 
 typedef struct processData
 {
-    int arrivaltime;
-    int priority;
-    int runningtime;
-    int id;
-}data;
+	int arrivaltime;
+	int priority;
+	int runningtime;
+	int responsetime;
+	int id;
+} data;
 
 typedef struct processControlBlock
 {
@@ -84,10 +86,10 @@ typedef struct processControlBlock
 	int totalTime;
 	int TA;
 	float WTA;
-	int flag;//if -1 infer data is empty or contain garbage
-			 // 1 otherwise
-	
-}PCB;
+	int flag; //if -1 infer data is empty or contain garbage
+			  // 1 otherwise
+
+} PCB;
 
 ////////////////// Data structures \\\\\\\\\\\\\\\\\\\\
 
@@ -96,114 +98,109 @@ typedef struct processControlBlock
 
 struct msgbuff
 {
-    long mtype;
-    data d;
-    int count;
+	long mtype;
+	data d;
+	int count;
 };
 
 struct msgbuff_process
 {
-    long mtype;
-    int current;
-    int remain;
-    int count;
+	long mtype;
+	int current;
+	int remain;
+	int count;
 };
 ////////////////// Node \\\\\\\\\\\\\\\\
 
 typedef struct Node
 {
-    PCB pcb ;
-    struct Node *next;
-}node;
+	PCB pcb;
+	struct Node *next;
+} node;
 
-node* createNode( PCB pcb1) 
+node *createNode(PCB pcb1)
 {
-	node* n = malloc(sizeof(node));
-	n->pcb=pcb1;
-	n->next=NULL;
+	node *n = malloc(sizeof(node));
+	n->pcb = pcb1;
+	n->next = NULL;
 	return n;
 }
-	
+
 typedef struct PriorityNode
 {
-    PCB pcb ;
-    struct PriorityNode *next;
-    int priorityofqueue;
-}prioritynode;
+	PCB pcb;
+	struct PriorityNode *next;
+	int priorityofqueue;
+} prioritynode;
 
-prioritynode* createPriorityNode( PCB pcb1,int priorityofqueue1) 
+prioritynode *createPriorityNode(PCB pcb1, int priorityofqueue1)
 {
-	prioritynode* n = malloc(sizeof(prioritynode));
-	n->pcb=pcb1;
-	n->next=NULL;
-	n->priorityofqueue=priorityofqueue1;
+	prioritynode *n = malloc(sizeof(prioritynode));
+	n->pcb = pcb1;
+	n->next = NULL;
+	n->priorityofqueue = priorityofqueue1;
 	return n;
-}	  
+}
 ////////////////// Queue \\\\\\\\\\\\\\\\
 
 typedef struct Queue
 {
-    node *front;
-    node *rear;
-    long count;
+	node *front;
+	node *rear;
+	long count;
 } queue;
 
 void init(queue *q)
 {
-    q->front = NULL;
-    q->rear = NULL;
-    q->count = 0;
+	q->front = NULL;
+	q->rear = NULL;
+	q->count = 0;
 }
 
 bool isEmpty(queue *q)
 {
-	if(q->front==NULL && q->rear==NULL)
+	if (q->front == NULL && q->rear == NULL)
 		return true;
 	else
 		return false;
-
 }
 
 void enqueue(queue *q, PCB p1)
 {
-	p1.flag=1;
-	node* n=createNode(p1);
+	p1.flag = 1;
+	node *n = createNode(p1);
 	//Empty queue
-	if (q->front==NULL && q->rear==NULL)
+	if (q->front == NULL && q->rear == NULL)
 	{
 		q->front = n;
-    	q->rear = n;
-    	q->count+=1;
+		q->rear = n;
+		q->count += 1;
 	}
 	else
 	{
 		q->rear->next = n;
-        q->rear = n;
-        q->count+=1;
-		
+		q->rear = n;
+		q->count += 1;
 	}
-	
 }
-
 
 PCB dequeue(queue *q)
 {
 	PCB p;
-	p.flag=-1;
-	if (q->front==NULL && q->rear==NULL)
+	p.flag = -1;
+	if (q->front == NULL && q->rear == NULL)
 	{
 		return p;
 	}
 	else
 	{
-		node *n=q->front;
-		p=n->pcb;
-		q->front = q->front->next; 
-		if (q->front == NULL) 
-		    q->rear = NULL; 
+		node *n = q->front;
+		p = n->pcb;
+		q->front = q->front->next;
+		if (q->front == NULL)
+			q->rear = NULL;
 		free(n);
-	  	return p;
-	
+		return p;
 	}
 }
 
@@ -211,95 +208,86 @@ PCB dequeue(queue *q)
 
 typedef struct PriorityQueue
 {
-    prioritynode *front;
-    prioritynode *rear;
-    long count;
+	prioritynode *front;
+	prioritynode *rear;
+	long count;
 } priorityqueue;
 
 void initPriority(priorityqueue *q)
 {
-    q->front = NULL;
-    q->rear = NULL;
-    q->count = 0;
+	q->front = NULL;
+	q->rear = NULL;
+	q->count = 0;
 }
 
 bool isEmptyPriority(priorityqueue *q)
 {
-	if(q->front==NULL && q->rear==NULL)
+	if (q->front == NULL && q->rear == NULL)
 		return true;
 	else
 		return false;
-
 }
 
-void enqueuePriority(priorityqueue *q, PCB p,int priorityofqueue)
+void enqueuePriority(priorityqueue *q, PCB p, int priorityofqueue)
 {
-	p.flag=1;
-	prioritynode* pn=createPriorityNode(p,priorityofqueue);
+	p.flag = 1;
+	prioritynode *pn = createPriorityNode(p, priorityofqueue);
 	//Empty Priority queue
-	if (q->front==NULL && q->rear==NULL)
+	if (q->front == NULL && q->rear == NULL)
 	{
 		//printf("eeeeeeee\n");
 		q->front = pn;
-    	q->rear = pn;
-    	q->count+=1;
+		q->rear = pn;
+		q->count += 1;
 	}
 	else
-	{	
-		if(pn->priorityofqueue < q->front->priorityofqueue)
+	{
+		if (pn->priorityofqueue < q->front->priorityofqueue)
 		{
-		//printf("first\n");
-			
-			pn->next=q->front;
-	 		q->front=pn;
-		
+			//printf("first\n");
+
+			pn->next = q->front;
+			q->front = pn;
 		}
-		else if(pn->priorityofqueue >= q->rear->priorityofqueue )
-	 	{
-	 	//printf("second\n");
-	 		q->rear->next=pn;
-	 		q->rear=pn;
-	 		
-	 	}
-	 	
+		else if (pn->priorityofqueue >= q->rear->priorityofqueue)
+		{
+			//printf("second\n");
+			q->rear->next = pn;
+			q->rear = pn;
+		}
+
 		else
 		{
-		//printf("AAAA\n");
-		prioritynode* temp=q->front;
-		prioritynode* tempnext=q->front->next;
-		while(temp!=NULL && tempnext!=NULL && temp->next->priorityofqueue <= pn->priorityofqueue)
-		{
-			temp=temp->next;
-			tempnext=temp->next;
+			//printf("AAAA\n");
+			prioritynode *temp = q->front;
+			prioritynode *tempnext = q->front->next;
+			while (temp != NULL && tempnext != NULL && temp->next->priorityofqueue <= pn->priorityofqueue)
+			{
+				temp = temp->next;
+				tempnext = temp->next;
+			}
+			pn->next = temp->next;
+			temp->next = pn;
 		}
-		pn->next=temp->next;
-	 	temp->next=pn;
-	 	}
 	}
-	
 }
-
 
 PCB dequeuePriority(priorityqueue *q)
 {
 	PCB p;
-	p.flag=-1;
-	if (q->front==NULL && q->rear==NULL)
+	p.flag = -1;
+	if (q->front == NULL && q->rear == NULL)
 	{
 		return p;
 	}
 	else
 	{
-		prioritynode *n=q->front;
-		p=n->pcb;
-		q->front = q->front->next; 
-		if (q->front == NULL) 
-		    q->rear = NULL; 
+		prioritynode *n = q->front;
+		p = n->pcb;
+		q->front = q->front->next;
+		if (q->front == NULL)
+			q->rear = NULL;
 		free(n);
-	  	return p;
-	
+		return p;
 	}
 }
-
-
-
