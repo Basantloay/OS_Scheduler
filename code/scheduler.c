@@ -89,7 +89,8 @@ void sendCurrentRemain()
     	perror("Errror in send");
     */
     char remain[20];
-    sprintf(remain,"%d", runningProcess.remain);
+    int num=runningProcess.remain-(x-runningProcess.lastStart);
+    sprintf(remain,"%d", num);
     strcpy((char *)shmaddr2, remain);
 
 }
@@ -332,7 +333,7 @@ FILE *f3 = fopen("test.log", "a+");
 		}
 		else if (runningFlag==1)
 		{	x=getClk();
-			if(!isEmptyPriority(readyPriorityQueue)&&readyPriorityQueue->front->priorityofqueue<runningProcess.remain)
+			if(x-runningProcess.lastStart>runningProcess.remain||(!isEmptyPriority(readyPriorityQueue)&&readyPriorityQueue->front->priorityofqueue<(x-runningProcess.lastStart)))
 			{
 				f3 = fopen("test.log", "a+");	
    	fprintf(f3,"corner case %d	%d \n",x,runningProcess.lastStart);
@@ -448,27 +449,13 @@ FILE *f3 = fopen("test.log", "a+");
 			
 			
 			}
-			/*else
-			{
-			kill(runningProcess.pid,SIGCONT);
-			runningProcess.lastStart=x;
-				runningProcess.wait+=(runningProcess.lastStart-runningProcess.finish);
-				
-				f = fopen("scheduler.log", "a+");	
-   				fprintf(f,"At time %d process %d resumed arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
-   				fclose(f);
-				
-				
-				 
-				sendCurrentRemain();
-			}*/
+			
 		
 		
 		}
 		else if (runningFlag==1)
 		{	x=getClk();
-			//if(readyPriorityQueue->front!=NULL&&readyPriorityQueue->front->priorityofqueue<runningProcess.remain)
-			//{
+			
 			if(x-runningProcess.lastStart>=runningProcess.remain)
 				{
 				f3 = fopen("test.log", "a+");	
@@ -488,24 +475,126 @@ FILE *f3 = fopen("test.log", "a+");
    					fclose(f);
 					actualcount++;
 				
-				/*}
-				else
-				{
-					
-					f = fopen("scheduler.log", "a+");	
-   					fprintf(f,"At time %d process %d stopped arr %d total %d remain %d wait %d \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
-   					fclose(f);
-					enqueuePriority(readyPriorityQueue,runningProcess,runningProcess.remain);
 				
-				}*/
 				
 				kill(runningProcess.pid,SIGSTOP);
 				
 				}
 				
 				else
-					{	//runningProcess.remain-=(x-runningProcess.lastStart);
+					{	
 					sendCurrentRemain();}
+				
+			}
+		if(actualcount>=count)
+			break;
+		
+		}
+	
+	
+	
+	}
+
+///////////////// First Come First Serve FCFS\\\\\\\\\\\\\\\\\
+
+void FCFS()
+{
+FILE *f3 = fopen("test.log", "a+");	
+   	fprintf(f3,"ENTERED FCFS \n");
+   	
+   	fclose(f3);
+   	
+	while(1)
+	{
+		
+		receiveProcess();
+		if(runningFlag==0 && !isEmpty(readyQueue))
+		{x = getClk();
+			runningFlag=1;
+			runningProcess=dequeue(readyQueue);
+			//first time enter the scheduler need forking
+			f3 = fopen("test.log", "a+");	
+   			fprintf(f3,"ENTERED FCFS %d	%d 		%d \n",runningProcess.remain,runningProcess.process.runningtime,runningProcess.pid);
+   	
+   			fclose(f3);
+   	
+			if( runningProcess.pid==-1)
+			{
+				f3 = fopen("test.log", "a+");	
+   	fprintf(f3,"gowaaa FCFS %d	%d \n",runningProcess.remain,runningProcess.process.runningtime);
+   	
+   	fclose(f3);
+				
+				
+				int pid2=fork();
+				if(pid2==-1)
+					printf("EEEEEEEEEEE");
+				else if(pid2==0)//child
+				{
+					char now2[20];
+					char remaining2[20];
+				// convert 123 to string [buf]
+					sprintf(now2,"%d", x);
+					
+					sprintf(remaining2,"%d",runningProcess.remain);
+					f3 = fopen("test.log", "a+");	
+   	fprintf(f3,"executed process %d	%d \n",runningProcess.remain,runningProcess.process.runningtime);
+   	
+   	fclose(f3);
+					execl("./process.out", "process.out ",now2,remaining2,NULL);
+					
+					//sendCurrentRemain();
+					//exit(0);
+				
+				}
+				else//parent
+				{
+					
+					runningProcess.firstStart=x;
+					runningProcess.lastStart=x;
+					runningProcess.pid=pid2;
+					runningProcess.wait+=(runningProcess.lastStart-runningProcess.process.arrivaltime);
+					f = fopen("scheduler.log", "a+");
+   				fprintf(f,"At time %d process %d started arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
+   				fclose(f);
+				}
+			
+			
+			
+			}
+			
+		}
+		else if (runningFlag==1)
+		{	x=getClk();
+			
+			if(x-runningProcess.lastStart>=runningProcess.remain)
+				{
+				f3 = fopen("test.log", "a+");	
+   	fprintf(f3,"corner case %d	%d \n",x,runningProcess.lastStart);
+   	
+   	fclose(f3);
+				runningFlag=0;
+				runningProcess.finish=x;
+				runningProcess.remain-=(x-runningProcess.lastStart);
+				sendCurrentRemain();
+				
+				
+					runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
+					runningProcess.WTA=(float)runningProcess.TA/(float)runningProcess.process.runningtime;
+					f = fopen("scheduler.log", "a+");	
+   					fprintf(f,"At time %d process %d finished arr %d total %d remain %d wait %d TA %d WTA %f \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait,runningProcess.TA,runningProcess.WTA);
+   					fclose(f);
+					actualcount++;
+				
+				
+				kill(runningProcess.pid,SIGSTOP);
+				
+				}
+				
+				else
+				{	
+					sendCurrentRemain();
+				}
 				
 			}
 		if(actualcount>=count)
@@ -553,7 +642,7 @@ int main(int argc, char *argv[])
 	if(algorithmnum==1)//FCFS
 	{
 	
-	
+		FCFS();
 	
 	}
 	else if(algorithmnum==2)//SJF

@@ -1,20 +1,20 @@
-At time 6 process 1 started arr 6 total 5 remain 5 wait 0
-At time 11 process 1 finished arr 6 total 5 remain 0 wait 0 TA 5 WTA 1.000000 
-At time 11 process 4 started arr 10 total 2 remain 2 wait 1
-At time 13 process 4 finished arr 10 total 2 remain 0 wait 1 TA 3 WTA 1.500000 
-At time 13 process 3 started arr 8 total 3 remain 3 wait 5
-At time 16 process 3 finished arr 8 total 3 remain 0 wait 5 TA 8 WTA 2.666667 
-At time 16 process 5 started arr 10 total 3 remain 3 wait 6
-At time 19 process 5 finished arr 10 total 3 remain 0 wait 6 TA 9 WTA 3.000000 
-At time 19 process 10 started arr 17 total 1 remain 1 wait 2
-At time 20 process 10 finished arr 17 total 1 remain 0 wait 2 TA 3 WTA 3.000000 
-At time 20 process 9 started arr 17 total 2 remain 2 wait 3
-At time 22 process 9 finished arr 17 total 2 remain 0 wait 3 TA 5 WTA 2.500000 
-At time 22 process 8 started arr 16 total 5 remain 5 wait 6
-At time 27 process 8 finished arr 16 total 5 remain 0 wait 6 TA 11 WTA 2.200000 
-At time 27 process 2 started arr 8 total 7 remain 7 wait 19
-At time 34 process 2 finished arr 8 total 7 remain 0 wait 19 TA 26 WTA 3.714286 
-At time 34 process 7 started arr 15 total 7 remain 7 wait 19
-At time 41 process 7 finished arr 15 total 7 remain 0 wait 19 TA 26 WTA 3.714286 
-At time 41 process 6 started arr 13 total 9 remain 9 wait 28
-At time 50 process 6 finished arr 13 total 9 remain 0 wait 28 TA 37 WTA 4.111111 
+At time 1 process 1 started arr 1 total 5 remain 5 wait 0
+At time 6 process 1 finished arr 1 total 5 remain 0 wait 0 TA 5 WTA 1.000000 
+At time 6 process 2 started arr 1 total 3 remain 3 wait 5
+At time 9 process 2 finished arr 1 total 3 remain 0 wait 5 TA 8 WTA 2.666667 
+At time 9 process 3 started arr 8 total 3 remain 3 wait 1
+At time 12 process 3 finished arr 8 total 3 remain 0 wait 1 TA 4 WTA 1.333333 
+At time 12 process 4 started arr 10 total 2 remain 2 wait 2
+At time 14 process 4 finished arr 10 total 2 remain 0 wait 2 TA 4 WTA 2.000000 
+At time 14 process 5 started arr 10 total 3 remain 3 wait 4
+At time 17 process 5 finished arr 10 total 3 remain 0 wait 4 TA 7 WTA 2.333333 
+At time 17 process 6 started arr 13 total 9 remain 9 wait 4
+At time 26 process 6 finished arr 13 total 9 remain 0 wait 4 TA 13 WTA 1.444444 
+At time 26 process 7 started arr 15 total 7 remain 7 wait 11
+At time 33 process 7 finished arr 15 total 7 remain 0 wait 11 TA 18 WTA 2.571429 
+At time 33 process 8 started arr 16 total 5 remain 5 wait 17
+At time 38 process 8 finished arr 16 total 5 remain 0 wait 17 TA 22 WTA 4.400000 
+At time 38 process 9 started arr 17 total 2 remain 2 wait 21
+At time 40 process 9 finished arr 17 total 2 remain 0 wait 21 TA 23 WTA 11.500000 
+At time 40 process 10 started arr 17 total 1 remain 1 wait 23
+At time 41 process 10 finished arr 17 total 1 remain 0 wait 23 TA 24 WTA 24.000000 
