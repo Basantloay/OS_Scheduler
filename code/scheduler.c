@@ -391,7 +391,7 @@ FILE *f3 = fopen("test.log", "a+");
 					runningProcess.firstStart=x;
 					runningProcess.lastStart=x;
 					runningProcess.pid=pid2;
-					runningProcess.wait+=(runningProcess.lastStart-runningProcess.process.arrivaltime);
+					//runningProcess.wait+=(runningProcess.lastStart-runningProcess.process.arrivaltime);
 					f = fopen("scheduler.log", "a+");
    				fprintf(f,"At time %d process %d started arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
    				fclose(f);
@@ -419,7 +419,7 @@ FILE *f3 = fopen("test.log", "a+");
 		}
 		else if (runningFlag==1)
 		{	x=getClk();
-			if(x-runningProcess.lastStart>runningProcess.remain||(!isEmptyPriority(readyPriorityQueue)&&readyPriorityQueue->front->priorityofqueue<(x-runningProcess.lastStart)))
+			if(x-runningProcess.lastStart>=runningProcess.remain||(!isEmptyPriority(readyPriorityQueue)&&readyPriorityQueue->front->priorityofqueue<(x-runningProcess.lastStart)))
 			{
 				f3 = fopen("test.log", "a+");	
    	fprintf(f3,"corner case %d	%d \n",x,runningProcess.lastStart);
@@ -750,7 +750,7 @@ void HPF()
 					runningProcess.firstStart = x;
 					runningProcess.lastStart = x;
 					runningProcess.pid = pid2;
-					runningProcess.wait += (runningProcess.lastStart - runningProcess.process.arrivaltime);
+					//runningProcess.wait =runningProcess.wait+ (runningProcess.lastStart - runningProcess.process.arrivaltime);
 					runningFlag = 1;
 					f = fopen("scheduler.log", "a+");
 					fprintf(f, "At time %d process %d started arr %d total %d remain %d wait %d\n", x, runningProcess.process.id, runningProcess.process.arrivaltime, runningProcess.totalTime, runningProcess.remain, runningProcess.wait);
@@ -775,7 +775,7 @@ void HPF()
 		else if (runningFlag == 1)
 		{
 			x = getClk();
-			if (!isEmptyPriority(readyPriorityQueue) || (readyPriorityQueue->front->priorityofqueue ==  runningProcess.process.priority))
+			if (x-runningProcess.lastStart >=runningProcess.remain||(!isEmptyPriority(readyPriorityQueue) && (readyPriorityQueue->front->priorityofqueue <  runningProcess.process.priority)))
 			{
 				f3 = fopen("test.log", "a+");
 				fprintf(f3, "corner case %d	%d \n", x, runningProcess.process.priority);
@@ -797,8 +797,6 @@ void HPF()
 				}
 
 				else
-				{	//runningProcess.remain-=(x-runningProcess.lastStart);
-					sendCurrentRemain();}
 
 				{
 
@@ -815,8 +813,7 @@ void HPF()
 			{ //runningProcess.remain-=(x-runningProcess.lastStart);
 				sendCurrentRemain();
 			}
-		if(actualcount>=count)
-			break;
+		
 
 		}
 

@@ -66,15 +66,19 @@ int main(int argc, char *argv[])
 
     // 2. Read the chosen scheduling algorithm and its parameters, if there are any from the argument list.
         //default quanta = zero 
-        int q = -1;
-        int algo = -1;
+        char qstr[10] ;
+        char algostr[10] ;
         int pidC,pidS;
-        //algo = argv[1];
-        //if (argc > 2)
-        //{
-        //    q = argv[2];
-        //}     
-		while (true)
+        
+        int q;
+        int algo=atoi(argv[2]);
+        if (argc > 3)
+        {
+            q = atoi(argv[4]);
+        }   
+        else 
+        	q=-1;  
+	/*	while (true)
     	{
 			printf("\n1 ===> FCFS");
 		    printf("\n2 ===> SJF");
@@ -99,7 +103,7 @@ int main(int argc, char *argv[])
             else
             	printf("\n    Invalid Input for Quantum Q !!!");
         }
-   
+   */
 
     // 3. Initiate and create the scheduler and clock processes.
 
