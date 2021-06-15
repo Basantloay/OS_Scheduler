@@ -258,22 +258,25 @@ FILE *f3 = fopen("test.log", "a+");
 				
 				
 				kill(runningProcess.pid,SIGCONT); 
-				sendRemain();
+				sendCurrentRemain();
 			}
 		
 		
 		}
 		else if (runningFlag==1)
 		{	//x=getClk();
+			
 			if((x-runningProcess.lastStart)>=quantum &&quantum<=runningProcess.remain)
 			{
-			int i=0;
-			while(i<200)
-				i++;
+			
 				f3 = fopen("test.log", "a+");	
    	fprintf(f3,"corner case %d	%d \n",x,runningProcess.lastStart);
    	
    	fclose(f3);
+   	kill(runningProcess.pid,SIGSTOP);
+   	int i=0;
+			while(i<1000)
+				i++;
 				runningFlag=0;
 				runningProcess.finish=x;
 				runningProcess.remain-=(x-runningProcess.lastStart);
@@ -300,7 +303,7 @@ FILE *f3 = fopen("test.log", "a+");
 				
 				}
 				
-				kill(runningProcess.pid,SIGSTOP);
+				
 				
 				}
 				else if(runningProcess.remain<quantum&&(x-runningProcess.lastStart)>=runningProcess.remain)
@@ -308,7 +311,7 @@ FILE *f3 = fopen("test.log", "a+");
 					runningFlag=0;
 				runningProcess.finish=x;
 				runningProcess.remain-=(x-runningProcess.lastStart);
-				sendRemain();
+				sendCurrentRemain();
 				
 				
 					runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
@@ -323,7 +326,7 @@ FILE *f3 = fopen("test.log", "a+");
 				}
 				else
 				
-					sendRemain();
+					sendCurrentRemain();
 					
 				
 			}

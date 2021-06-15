@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     char buffer[100];
     int count = 0;
     FILE *fp1;
-    strcpy(file_name,"./processes.txt");
+    strcpy(file_name,argv[1]);
 
 
     /////////////OPEN THE FILE////////
@@ -66,15 +66,14 @@ int main(int argc, char *argv[])
 
     // 2. Read the chosen scheduling algorithm and its parameters, if there are any from the argument list.
         //default quanta = zero 
-        char qstr[10] ;
-        char algostr[10] ;
+        
         int pidC,pidS;
         
         int q;
-        int algo=atoi(argv[2]);
-        if (argc > 3)
+        int algo=atoi(argv[3]);
+        if (argc > 4)
         {
-            q = atoi(argv[4]);
+            q = atoi(argv[5]);
         }   
         else 
         	q=-1;  
@@ -160,6 +159,7 @@ int main(int argc, char *argv[])
 
     while(true)
     {
+    	
         x = getClk();
         while(processArray[i].arrivaltime == x )//&& pidS==0)
         {

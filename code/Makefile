@@ -14,4 +14,4 @@ clean:
 all: clean build run
 
 run:
-	./process_generator.out -sch 4
+	./process_generator.out processes.txt -sch 5 -q 3
