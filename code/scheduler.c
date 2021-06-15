@@ -267,6 +267,9 @@ FILE *f3 = fopen("test.log", "a+");
 		{	//x=getClk();
 			if((x-runningProcess.lastStart)>=quantum &&quantum<=runningProcess.remain)
 			{
+			int i=0;
+			while(i<200)
+				i++;
 				f3 = fopen("test.log", "a+");	
    	fprintf(f3,"corner case %d	%d \n",x,runningProcess.lastStart);
    	
@@ -391,7 +394,7 @@ FILE *f3 = fopen("test.log", "a+");
 					runningProcess.firstStart=x;
 					runningProcess.lastStart=x;
 					runningProcess.pid=pid2;
-					//runningProcess.wait+=(runningProcess.lastStart-runningProcess.process.arrivaltime);
+					runningProcess.wait+=(runningProcess.lastStart-runningProcess.process.arrivaltime);
 					f = fopen("scheduler.log", "a+");
    				fprintf(f,"At time %d process %d started arr %d total %d remain %d wait %d\n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
    				fclose(f);
@@ -403,6 +406,7 @@ FILE *f3 = fopen("test.log", "a+");
 			else
 			{
 			kill(runningProcess.pid,SIGCONT);
+			runningFlag=1;
 			runningProcess.lastStart=x;
 				runningProcess.wait+=(runningProcess.lastStart-runningProcess.finish);
 				
@@ -419,13 +423,21 @@ FILE *f3 = fopen("test.log", "a+");
 		}
 		else if (runningFlag==1)
 		{	x=getClk();
-			if(x-runningProcess.lastStart>=runningProcess.remain||(!isEmptyPriority(readyPriorityQueue)&&readyPriorityQueue->front->priorityofqueue<(x-runningProcess.lastStart)))
+			int i=0;
+			while(i<1000)
+				i++;
+			if(x-runningProcess.lastStart>=runningProcess.remain||(!isEmptyPriority(readyPriorityQueue)&&readyPriorityQueue->front->priorityofqueue < (runningProcess.remain-(x-runningProcess.lastStart))))
 			{
+				runningFlag=0;
 				f3 = fopen("test.log", "a+");	
    	fprintf(f3,"corner case %d	%d \n",x,runningProcess.lastStart);
    	
    	fclose(f3);
-				runningFlag=0;
+   				
+   				kill(runningProcess.pid,SIGSTOP);
+				//int i=0;
+			//while(i<1000)
+			//	i++;
 				runningProcess.finish=x;
 				runningProcess.remain-=(x-runningProcess.lastStart);
 				sendCurrentRemain();
@@ -438,20 +450,21 @@ FILE *f3 = fopen("test.log", "a+");
 					totalWaiting+=(long)runningProcess.wait;
 					totalRunning+=(long)runningProcess.totalTime;
 					printingFinish();
+					runningFlag=0;
 					actualcount++;
 				
 				}
 				else
 				{
-					
+					//kill(runningProcess.pid,SIGSTOP);
 					f = fopen("scheduler.log", "a+");	
    					fprintf(f,"At time %d process %d stopped arr %d total %d remain %d wait %d \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
    					fclose(f);
 					enqueuePriority(readyPriorityQueue,runningProcess,runningProcess.remain);
-				
+				runningFlag=0;
 				}
 				
-				kill(runningProcess.pid,SIGSTOP);
+				
 				
 				}
 				
@@ -696,7 +709,7 @@ FILE *f3 = fopen("test.log", "a+");
 	
 	}
 
-////////////////// Highest Priority First \\\\\\
+////////////////// Highest Priority First HPF \\\\\\
 
 void HPF()
 {
@@ -750,7 +763,7 @@ void HPF()
 					runningProcess.firstStart = x;
 					runningProcess.lastStart = x;
 					runningProcess.pid = pid2;
-					//runningProcess.wait =runningProcess.wait+ (runningProcess.lastStart - runningProcess.process.arrivaltime);
+					runningProcess.wait =runningProcess.wait+ (runningProcess.lastStart - runningProcess.process.arrivaltime);
 					runningFlag = 1;
 					f = fopen("scheduler.log", "a+");
 					fprintf(f, "At time %d process %d started arr %d total %d remain %d wait %d\n", x, runningProcess.process.id, runningProcess.process.arrivaltime, runningProcess.totalTime, runningProcess.remain, runningProcess.wait);
@@ -897,12 +910,14 @@ void USRhandler(int signum)
 	
 	if(runningProcess.remain==0)
 	{
+	//runningFlag=0;
 	runningProcess.TA=runningProcess.finish-runningProcess.process.arrivaltime;
 	runningProcess.WTA=(float)runningProcess.TA/(float)runningProcess.process.runningtime;
 	totalWTA+=(double)runningProcess.WTA;
 	totalWaiting+=(long)runningProcess.wait;
 	totalRunning+=(long)runningProcess.totalTime;
 	printingFinish();
+	runningFlag=0;
 	count++;
 				
 	}
@@ -912,8 +927,29 @@ void USRhandler(int signum)
 	f = fopen("scheduler.log", "a+");	
    	fprintf(f,"At time %d process %d stopped arr %d total %d remain %d wait %d \n", x,runningProcess.process.id,runningProcess.process.arrivaltime,runningProcess.totalTime,runningProcess.remain,runningProcess.wait);
     fclose(f);
-	enqueue(readyQueue,runningProcess);
-				
+	if(algorithmnum==1||algorithmnum==5)
+    		{
+    			enqueue(readyQueue,runningProcess);
+    		
+    		}
+    		else if(algorithmnum==2)
+    		{
+    			enqueuePriority(readyPriorityQueue,runningProcess,runningProcess.totalTime);
+    
+    		}
+    		else if(algorithmnum==3)
+    		{
+    			enqueuePriority(readyPriorityQueue,runningProcess,runningProcess.process.priority);
+    		
+    		
+    		}
+    		else if(algorithmnum==4)
+    		{
+    			enqueuePriority(readyPriorityQueue,runningProcess,runningProcess.remain);
+    		
+    		
+    		}
+			runningFlag=0;	
 				}
 	signal(SIGUSR1,USRhandler);
 }
